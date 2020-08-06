@@ -30,10 +30,10 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/klog"
 
-	"github.com/duyanghao/velero-volume-controller/cmd/controller/velerovolume"
-	"github.com/duyanghao/velero-volume-controller/cmd/controller/velerovolume/config"
-	"github.com/duyanghao/velero-volume-controller/pkg/signals"
 	"github.com/google/uuid"
+	"github.com/smoothify/velero-volume-controller/cmd/controller/velerovolume"
+	"github.com/smoothify/velero-volume-controller/cmd/controller/velerovolume/config"
+	"github.com/smoothify/velero-volume-controller/pkg/signals"
 )
 
 var (
