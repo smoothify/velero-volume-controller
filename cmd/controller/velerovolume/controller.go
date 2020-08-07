@@ -46,6 +46,8 @@ type Controller struct {
 
 	podsLister corelisters.PodLister
 	podsSynced cache.InformerSynced
+	pvcLister  corelisters.PersistentVolumeClaimLister
+	pvLister   corelisters.PersistentVolumeLister
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -59,13 +61,17 @@ type Controller struct {
 func NewController(
 	cfg *config.VeleroVolumeCfg,
 	kubeclientset kubernetes.Interface,
-	podInformer coreinformers.PodInformer) *Controller {
+	podInformer coreinformers.PodInformer,
+	pvcInformer coreinformers.PersistentVolumeClaimInformer,
+	pvInformer coreinformers.PersistentVolumeInformer) *Controller {
 
 	controller := &Controller{
 		cfg:           cfg,
 		kubeclientset: kubeclientset,
 		podsLister:    podInformer.Lister(),
 		podsSynced:    podInformer.Informer().HasSynced,
+		pvcLister:     pvcInformer.Lister(),
+		pvLister:      pvInformer.Lister(),
 		workqueue:     workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "Pods"),
 	}
 
@@ -253,13 +259,46 @@ func (c *Controller) syncHandler(key string) error {
 func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 	// Iterate over all volumes
 	var veleroBackupAnnotationArray []string
+	claims := c.pvcLister.PersistentVolumeClaims(pod.Namespace)
+
 	for _, volume := range pod.Spec.Volumes {
-		// Check if volume uses persistentVolumeClaim and meets volume type requirements
-		if volume.PersistentVolumeClaim != nil && c.checkVolumeTypeRequirements(constants.VOLUME_TYPE_PERSISTENTVOLUMECLAIM) {
+		volumeType := c.getVolumeType(volume.VolumeSource)
+
+		// Check if volume uses persistentVolumeClaim and if so, retrieve underlying volume
+		if volume.PersistentVolumeClaim != nil {
+			// Check if claim name meets requirements
+			if !c.checkVolumeClaimNameRequirements(pod.Namespace, volume.PersistentVolumeClaim.ClaimName) {
+				break
+			}
 			klog.V(4).Infof("pod '%s/%s' uses volume '%s' from pvc '%s'", pod.Namespace, pod.Name, volume.Name, volume.PersistentVolumeClaim.ClaimName)
+			claim, err := claims.Get(volume.PersistentVolumeClaim.ClaimName)
+			if err != nil {
+				return err
+			}
+			pv, err := c.pvLister.Get(claim.Spec.VolumeName)
+			if err != nil {
+				return err
+			}
+			klog.V(4).Infof("volume %s retrieved for claim %s", pv.Name, claim.Name)
+			// Check if persistent volume name meets requirements
+			if !c.checkVolumeNameRequirements(pv.Name) {
+				break
+			}
+			storageClass := *claim.Spec.StorageClassName
+			if storageClass == "" {
+				storageClass = pv.Spec.StorageClassName
+			}
+			if !c.checkVolumeStorageClassRequirements(storageClass) {
+				break
+			}
+			volumeType = c.getPersistentVolumeType(pv.Spec.PersistentVolumeSource)
+		}
+
+		// Check if volume meets volume type requirements
+		if c.checkVolumeTypeRequirements(volumeType) {
+			klog.V(4).Infof("volume %s of type %s matches requirements", volume.Name, volumeType)
 			veleroBackupAnnotationArray = append(veleroBackupAnnotationArray, volume.Name)
 		}
-		// TODO: add other volume types ...
 	}
 	if len(veleroBackupAnnotationArray) > 0 {
 		// NEVER modify objects from the store. It's a read-only, local cache.
@@ -284,25 +323,216 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 	return nil
 }
 
-// checkVolumeTypeRequirements is a function that indicates if a volume meets backup volume type requirements
-func (c *Controller) checkVolumeTypeRequirements(volumeType string) bool {
-	if c.cfg.IncludeVolumeTypes != "" {
-		includeVolumeTypes := strings.Split(c.cfg.IncludeVolumeTypes, ",")
-		for _, vt := range includeVolumeTypes {
-			if vt == volumeType {
+// checkVolumeClaimNameRequirements is a function that indicates if a claim meets backup claim name requirements
+func (c *Controller) checkVolumeClaimNameRequirements(namespace string, claimName string) bool {
+	if c.cfg.IncludeClaimNames != "" {
+		includeNames := strings.Split(c.cfg.IncludeClaimNames, ",")
+		for _, cn := range includeNames {
+			// Include name has a namespace specified
+			if strings.Contains(cn, "/") {
+				if cn == fmt.Sprintf("%s/%s", namespace, claimName) {
+					return true
+				}
+			} else {
+				if cn == claimName {
+					return true
+				}
+			}
+		}
+		return false
+	} else if c.cfg.ExcludeClaimNames != "" {
+		excludeNames := strings.Split(c.cfg.ExcludeClaimNames, ",")
+		for _, cn := range excludeNames {
+			// Exclude name has a namespace specified
+			if strings.Contains(cn, "/") {
+				if cn == fmt.Sprintf("%s/%s", namespace, claimName) {
+					return true
+				}
+			} else {
+				if cn == claimName {
+					return true
+				}
+			}
+		}
+	}
+	return true
+}
+
+// checkVolumeNameRequirements is a function that indicates if a volume meets backup volume name requirements
+func (c *Controller) checkVolumeNameRequirements(volumeName string) bool {
+	if c.cfg.IncludeVolumeNames != "" {
+		includeNames := strings.Split(c.cfg.IncludeVolumeNames, ",")
+		for _, cn := range includeNames {
+			if cn == volumeName {
 				return true
 			}
 		}
 		return false
-	} else if c.cfg.ExcludeVolumeTypes != "" {
-		excludeVolumeTypes := strings.Split(c.cfg.ExcludeVolumeTypes, ",")
-		for _, vt := range excludeVolumeTypes {
-			if vt == volumeType {
+	} else if c.cfg.ExcludeVolumeNames != "" {
+		excludeNames := strings.Split(c.cfg.ExcludeVolumeNames, ",")
+		for _, cn := range excludeNames {
+			if cn == volumeName {
 				return false
 			}
 		}
 	}
 	return true
+}
+
+// checkVolumeStorageClassRequirements is a function that indicates if a volume meets storage class requirements
+func (c *Controller) checkVolumeStorageClassRequirements(storageClass string) bool {
+	if c.cfg.IncludeStorageClasses != "" {
+		includeClasses := strings.Split(c.cfg.IncludeStorageClasses, ",")
+		for _, sc := range includeClasses {
+			if sc == storageClass {
+				return true
+			}
+		}
+		return false
+	} else if c.cfg.ExcludeStorageClasses != "" {
+		excludeClasses := strings.Split(c.cfg.ExcludeStorageClasses, ",")
+		for _, sc := range excludeClasses {
+			if sc == storageClass {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+
+// checkVolumeTypeRequirements is a function that indicates if a volume meets backup volume type requirements
+func (c *Controller) checkVolumeTypeRequirements(volumeType string) bool {
+	if c.cfg.IncludeVolumeTypes != "" {
+		includeVolumeTypes := strings.Split(c.cfg.IncludeVolumeTypes, ",")
+		for _, vt := range includeVolumeTypes {
+			if strings.EqualFold(vt, volumeType) {
+				return true
+			}
+		}
+		return false
+	} else {
+		excludeVolumeTypes := strings.Split(c.cfg.ExcludeVolumeTypes, ",")
+		excludeVolumeTypes = append(excludeVolumeTypes, "hostPath", "secret", "configMap", "emptyDir")
+		for _, vt := range excludeVolumeTypes {
+			if strings.EqualFold(vt, volumeType) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// getVolumeType is a function that retrieves the type of a pod volume
+func (c *Controller) getVolumeType(source corev1.VolumeSource) string {
+	switch {
+		case source.HostPath != nil:
+			return "hostPath"
+		case source.EmptyDir != nil:
+			return "emptyDir"
+		case source.GCEPersistentDisk != nil:
+			return "gcePersistentDisk"
+		case source.AWSElasticBlockStore != nil:
+			return "awsElasticBlockStore"
+		case source.Secret != nil:
+			return "secret"
+		case source.NFS != nil:
+			return "nfs"
+		case source.ISCSI != nil:
+			return "iscsi"
+		case source.Glusterfs != nil:
+			return "glusterfs"
+		case source.PersistentVolumeClaim != nil:
+			return "persistentVolumeClaim"
+		case source.RBD != nil:
+			return "rbd"
+		case source.FlexVolume != nil:
+			return "flexVolume"
+		case source.Cinder != nil:
+			return "cinder"
+		case source.CephFS != nil:
+			return "cephfs"
+		case source.Flocker != nil:
+			return "flocker"
+		case source.DownwardAPI != nil:
+			return "downwardAPI"
+		case source.FC != nil:
+			return "fc"
+		case source.AzureFile != nil:
+			return "azureFile"
+		case source.AzureDisk != nil:
+			return "azureDisk"
+		case source.ConfigMap != nil:
+			return "configMap"
+		case source.VsphereVolume != nil:
+			return "vsphereVolume"
+		case source.Quobyte != nil:
+			return "quobyte"
+		case source.PhotonPersistentDisk != nil:
+			return "photonPersistentDisk"
+		case source.Projected != nil:
+			return "projected"
+		case source.PortworxVolume != nil:
+			return "portworxVolume"
+		case source.ScaleIO != nil:
+			return "scaleIO"
+		case source.StorageOS != nil:
+			return "storageos"
+		case source.CSI != nil:
+			return "csi"
+	}
+	return ""
+
+}
+
+// getPersistentVolumeType is a function that retrieves the type of a volume
+func (c *Controller) getPersistentVolumeType(source corev1.PersistentVolumeSource) string {
+	switch {
+		case source.HostPath != nil:
+			return "hostPath"
+		case source.GCEPersistentDisk != nil:
+			return "gcePersistentDisk"
+		case source.AWSElasticBlockStore != nil:
+			return "awsElasticBlockStore"
+		case source.NFS != nil:
+			return "nfs"
+		case source.ISCSI != nil:
+			return "iscsi"
+		case source.Glusterfs != nil:
+			return "glusterfs"
+		case source.RBD != nil:
+			return "rbd"
+		case source.FlexVolume != nil:
+			return "flexVolume"
+		case source.Cinder != nil:
+			return "cinder"
+		case source.CephFS != nil:
+			return "cephfs"
+		case source.Flocker != nil:
+			return "flocker"
+		case source.FC != nil:
+			return "fc"
+		case source.AzureFile != nil:
+			return "azureFile"
+		case source.AzureDisk != nil:
+			return "azureDisk"
+		case source.VsphereVolume != nil:
+			return "vsphereVolume"
+		case source.Quobyte != nil:
+			return "quobyte"
+		case source.PhotonPersistentDisk != nil:
+			return "photonPersistentDisk"
+		case source.PortworxVolume != nil:
+			return "portworxVolume"
+		case source.ScaleIO != nil:
+			return "scaleIO"
+		case source.StorageOS != nil:
+			return "storageos"
+		case source.CSI != nil:
+			return "csi"
+	}
+	return ""
+
 }
 
 // enqueuePod takes a Pod resource and converts it into a namespace/name

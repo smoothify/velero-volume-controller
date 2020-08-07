@@ -6,5 +6,11 @@ clusterServerCfg:
 veleroVolumeCfg:
   includeNamespaces: test
   excludeNamespaces:
-  includeVolumeTypes: persistentVolumeClaim
+  includeVolumeTypes:
   excludeVolumeTypes:
+  includeClaimNames:
+  excludeClaimNames:
+  includeVolumeNames:
+  excludeVolumeNames:
+  includeStorageClasses:
+  excludeStorageClasses:

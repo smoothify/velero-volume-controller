@@ -66,7 +66,10 @@ func main() {
 	run := func() {
 		kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, 0)
 
-		controller := velerovolume.NewController(cfg.VeleroVolumeCfg, kubeClient, kubeInformerFactory.Core().V1().Pods())
+		podInformer := kubeInformerFactory.Core().V1().Pods()
+		pvcInformer := kubeInformerFactory.Core().V1().PersistentVolumeClaims()
+		pvInformer := kubeInformerFactory.Core().V1().PersistentVolumes()
+		controller := velerovolume.NewController(cfg.VeleroVolumeCfg, kubeClient, podInformer, pvcInformer, pvInformer)
 
 		// notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(stopCh)
 		// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
