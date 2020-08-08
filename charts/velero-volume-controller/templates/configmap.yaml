@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "velero-volume-controller.fullname" . }}
+  labels:
+    {{- include "velero-volume-controller.labels" . | nindent 4 }}
+data:
+  config.yml: |
+    clusterServerCfg:
+      masterURL: {{ .Values.clusterServerCfg.masterURL }}
+      kubeConfig: {{ .Values.clusterServerCfg.kubeConfig }}
+      leaseLockNamespace: {{ .Values.clusterServerCfg.leaseLockNamespace }}
+      leaseLockName: {{ .Values.clusterServerCfg.leaseLockName }}
+    veleroVolumeCfg:
+      includeNamespaces: {{ .Values.veleroVolumeCfg.includeNamespaces }}
+      excludeNamespaces: {{ .Values.veleroVolumeCfg.excludeNamespaces }}
+      includeVolumeTypes: {{ .Values.veleroVolumeCfg.includeVolumeTypes }}
+      excludeVolumeTypes: {{ .Values.veleroVolumeCfg.excludeVolumeTypes }}

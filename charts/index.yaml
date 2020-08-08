@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  velero-volume-controller:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2020-06-01T14:02:48.5587807+02:00"
+    description: Kubernetes controller for velero that detects and adds relevant backup
+      annotation to pods with volumes
+    digest: 9df535d721b9b3e1f6d3f63bb27beeebee837b14c45776650118a3a06ad79837
+    name: velero-volume-controller
+    type: application
+    urls:
+    - velero-volume-controller-0.1.0.tgz
+    version: 0.1.0
+generated: "2020-06-01T14:02:48.5583693+02:00"
