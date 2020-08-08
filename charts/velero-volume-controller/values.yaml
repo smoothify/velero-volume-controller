@@ -1,10 +1,10 @@
 replicaCount: 1
 
 image:
-  repository: adferrand/velero-volume-controller
+  repository: smoothify/velero-volume-controller
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart version.
-  tag: ""
+  tag: latest
 
 imagePullSecrets: []
 nameOverride: ""
@@ -19,8 +19,14 @@ clusterServerCfg:
 veleroVolumeCfg:
   includeNamespaces: ""
   excludeNamespaces: ""
-  includeVolumeTypes: persistentVolumeClaim
+  includeVolumeTypes: ""
   excludeVolumeTypes: ""
+  includeClaimNames: ""
+  excludeClaimNames: ""
+  includeVolumeNames: ""
+  excludeVolumeNames: ""
+  includeStorageClasses: ""
+  excludeStorageClasses: ""
 
 # If true, will create the proper RBAC to watch the cluster pods
 # and associate the related service account to the controller pod.
