@@ -4,26 +4,107 @@ name: default
 
 steps:
 
-- name: build
+- name: get-branch-version
+  image: smoothify/drone-semantic-release
+  pull: always
+  settings:
+    dry_run: true
+    git_credentials: { from_secret: git_password }
+    git_user_email: { from_secret: git_email }
+    tags_build: true
+  when:
+    event:
+      - push
+
+- name: build-branch
   image: golang:1.14
   environment:
     CGO_ENABLED: 0
     GO111MODULE: on
   commands:
-    - "go build -v -o release/linux/amd64/velero-volume-controller ./cmd/controller"
+    - "go build -ldflags \"-X main.version=${NEXT_VERSION}\" -a -tags netgo -v -o release/linux/amd64/velero-volume-controller ./cmd/controller"
   when:
     event:
       - push
 
-- name: build and push
-  image: plugins/docker
-  settings:
-    auto_tag: true
-    dockerfile: docker/Dockerfile
-    password: {from_secret: docker_password}
-    repo: smoothify/velero-volume-controller
-    username: smoothify
+###### Helm ######
+- name: helm lint
+  image: quay.io/helmpack/chart-testing:v3.0.0
+  commands:
+    - apk add --update make
+    - make lint
   when:
     event:
       - push
-      - tag
+
+- name: helm gh pages clone
+  image: docker:git
+  commands:
+    - git clone --single-branch --branch gh-pages $DRONE_GIT_HTTP_URL .helm
+  when:
+    event:
+      - push
+
+- name: helm bump version
+  image: smoothify/drone-helm-version-bump
+  pull: always
+  settings:
+    dry_run: false
+    working_dir: ./charts/velero-volume-controller
+    chart_version_file: .release-version
+    app_version_file: .release-version
+    image: smoothify/velero-volume-controller
+    image_version_file: .release-version
+  when:
+    event:
+      - push
+
+- name: helm generate
+  image: alpine/helm:3.0.3
+  commands:
+    - apk add --update make
+    - make publish
+  when:
+    event:
+      - push
+
+- name: build-branch-image
+  image: plugins/docker
+  settings:
+    dockerfile: docker/Dockerfile
+    repo: smoothify/velero-volume-controller
+    username: {from_secret: docker_username}
+    password: {from_secret: docker_password}
+    cache_from:
+      - smoothify/velero-volume-controller:latest
+  when:
+    event:
+      - push
+
+###### Release ######
+- name: release-branch
+  image: smoothify/drone-semantic-release
+  pull: always
+  settings:
+    dry_run: false
+    git_credentials: { from_secret: git_password }
+    git_user_email: { from_secret: git_email }
+    changelog: true
+    assets:
+      - charts/velero-volume-controller/values.yaml
+      - charts/velero-volume-controller/Chart.yaml
+  when:
+    event:
+      - push
+
+- name: helm release
+  image: plugins/gh-pages
+  settings:
+    username: smoothify
+    password: {from_secret: git_password}
+    pages_directory: .helm
+  when:
+    event:
+      - push
+    branch:
+      - master
