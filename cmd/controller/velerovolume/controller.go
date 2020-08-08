@@ -226,9 +226,11 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
+	flag := true
+
 	// Drop pods that don't meet namespace requirements
 	if c.cfg.IncludeNamespaces != "" {
-		flag := false
+		flag = false
 		includeNamespaces := strings.Split(c.cfg.IncludeNamespaces, ",")
 		for _, namespace := range includeNamespaces {
 			if strings.Trim(namespace, " ") == pod.Namespace {
@@ -238,10 +240,8 @@ func (c *Controller) syncHandler(key string) error {
 		}
 		if !flag {
 			klog.V(4).Infof("drop pod: '%s/%s' as it's outside the range of including namespaces", pod.Namespace, pod.Name)
-			return nil
 		}
 	} else if c.cfg.ExcludeNamespaces != "" {
-		flag := true
 		excludeNamespaces := strings.Split(c.cfg.ExcludeNamespaces, ",")
 		for _, namespace := range excludeNamespaces {
 			if strings.Trim(namespace, " ") == pod.Namespace {
@@ -251,14 +251,21 @@ func (c *Controller) syncHandler(key string) error {
 		}
 		if !flag {
 			klog.V(4).Infof("drop pod: '%s/%s' as it's within the range of excluding namespaces", pod.Namespace, pod.Name)
-			return nil
 		}
 	}
 
-	err = c.addBackupAnnotationsToPod(pod)
-	if err != nil {
-		klog.Errorf("failed to add velero restic backup annotation to pod: '%s/%s', error: %s", pod.Namespace, pod.Name, err.Error())
-		return err
+	if flag {
+		err = c.addBackupAnnotationsToPod(pod)
+		if err != nil {
+			klog.Errorf("failed to add velero restic backup annotation to pod: '%s/%s', error: %s", pod.Namespace, pod.Name, err.Error())
+			return err
+		}
+	} else {
+		err = c.removeBackupAnnotationsFromPod(pod)
+		if err != nil {
+			klog.Errorf("failed to remove velero restic backup annotations from pod: '%s/%s', error: %s", pod.Namespace, pod.Name, err.Error())
+			return err
+		}
 	}
 
 	return nil
@@ -272,10 +279,8 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 	var veleroBackupAnnotationArray []string
 	claims := c.pvcLister.PersistentVolumeClaims(pod.Namespace)
 	excludedVolumes := strings.Split(pod.Annotations[constants.VELERO_BACKUP_EXCLUDES_ANNOTATION_KEY], ",")
-	managedByVVC := utils.Truthy(pod.Annotations[constants.POD_BACKUP_MANAGED_ANNOTATION_KEY])
 
 	for _, volume := range pod.Spec.Volumes {
-
 		// Check if volume is in excluded volumes annotation
 		for _, ev := range excludedVolumes {
 			if strings.Trim(ev, " ") == volume.Name {
@@ -344,12 +349,25 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 			return err
 		}
 		klog.V(4).Infof("add velero restic backup annotation: '%s=%s' to pod '%s/%s' successfully", constants.VELERO_BACKUP_ANNOTATION_KEY, veleroBackupAnnotationValue, pod.Namespace, pod.Name)
-	} else if managedByVVC {
+
+	} else {
+		return c.removeBackupAnnotationsFromPod(pod)
+	}
+
+	return nil
+}
+
+// removeBackupAnnotationsFromPod removes relevant backup annotation from pods that no longer have valid volumes.
+// The logic of removeBackupAnnotationsFromPod is kept as simple as possible
+func (c *Controller) removeBackupAnnotationsFromPod(pod *corev1.Pod) error {
+	managedByVVC := utils.Truthy(pod.Annotations[constants.POD_BACKUP_MANAGED_ANNOTATION_KEY])
+
+	if managedByVVC {
 		err := c.patchPodAnnotations(pod.Namespace, pod.Name, nil, nil)
 		if err != nil {
 			return err
 		}
-		klog.V(4).Infof("removed obsolete restic backup annotation %s for pod '%s/%s' successfully", constants.VELERO_BACKUP_ANNOTATION_KEY, pod.Namespace, pod.Name)
+		klog.V(4).Infof("pod '%s/%s' previously managed by controller, removed restic backup annotation %s successfully", pod.Namespace, pod.Name, constants.VELERO_BACKUP_ANNOTATION_KEY)
 	}
 	return nil
 }
