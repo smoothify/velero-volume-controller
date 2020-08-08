@@ -18,8 +18,11 @@ package velerovolume
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/smoothify/velero-volume-controller/pkg/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"strings"
 	"time"
 
@@ -55,6 +58,14 @@ type Controller struct {
 	// time, and makes it easy to ensure we are never processing the same item
 	// simultaneously in two different workers.
 	workqueue workqueue.RateLimitingInterface
+}
+
+type PodPatchMetadata struct {
+	Annotations map[string]interface{} `json:"annotations" protobuf:"bytes,12,rep,name=annotations"`
+}
+
+type PodPatch struct {
+	Metadata PodPatchMetadata `json:"annotations" protobuf:"bytes,12,rep,name=metadata"`
 }
 
 // NewController returns a new sample controller
@@ -260,16 +271,22 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 	// Iterate over all volumes
 	var veleroBackupAnnotationArray []string
 	claims := c.pvcLister.PersistentVolumeClaims(pod.Namespace)
+	excludedVolumes := strings.Split(pod.Annotations[constants.VELERO_BACKUP_EXCLUDES_ANNOTATION_KEY], ",")
+	managedByVVC := utils.Truthy(pod.Annotations[constants.POD_BACKUP_MANAGED_ANNOTATION_KEY])
 
 	for _, volume := range pod.Spec.Volumes {
+
+		// Check if volume is in excluded volumes annotation
+		for _, ev := range excludedVolumes {
+			if ev == volume.Name {
+				break
+			}
+		}
+
 		volumeType := c.getVolumeType(volume.VolumeSource)
 
 		// Check if volume uses persistentVolumeClaim and if so, retrieve underlying volume
 		if volume.PersistentVolumeClaim != nil {
-			// Check if claim name meets requirements
-			if !c.checkVolumeClaimNameRequirements(pod.Namespace, volume.PersistentVolumeClaim.ClaimName) {
-				break
-			}
 			klog.V(4).Infof("pod '%s/%s' uses volume '%s' from pvc '%s'", pod.Namespace, pod.Name, volume.Name, volume.PersistentVolumeClaim.ClaimName)
 			claim, err := claims.Get(volume.PersistentVolumeClaim.ClaimName)
 			if err != nil {
@@ -280,16 +297,36 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 				return err
 			}
 			klog.V(4).Infof("volume %s retrieved for claim %s", pv.Name, claim.Name)
-			// Check if persistent volume name meets requirements
-			if !c.checkVolumeNameRequirements(pv.Name) {
-				break
-			}
 			storageClass := *claim.Spec.StorageClassName
 			if storageClass == "" {
 				storageClass = pv.Spec.StorageClassName
 			}
-			if !c.checkVolumeStorageClassRequirements(storageClass) {
+
+			pvcAnnotations := claim.Annotations
+			pvAnnotations := pv.Annotations
+
+			// Check if the volume or claim is excluded via an annotation
+			if utils.Truthy(pvcAnnotations[constants.VOLUME_BACKUP_EXCLUDE_ANNOTATION_KEY]) ||
+				utils.Truthy(pvAnnotations[constants.VOLUME_BACKUP_EXCLUDE_ANNOTATION_KEY]) {
 				break
+			}
+
+			// Check if the volume or claim is included via an annotation
+			if !utils.Truthy(pvcAnnotations[constants.VOLUME_BACKUP_INCLUDE_ANNOTATION_KEY]) &&
+				!utils.Truthy(pvAnnotations[constants.VOLUME_BACKUP_INCLUDE_ANNOTATION_KEY]) {
+
+				// Check if claim name meets requirements
+				if !c.checkVolumeClaimNameRequirements(pod.Namespace, volume.PersistentVolumeClaim.ClaimName) {
+					break
+				}
+				// Check if persistent volume name meets requirements
+				if !c.checkVolumeNameRequirements(pv.Name) {
+					break
+				}
+				// Check if storage class meets requirements
+				if !c.checkVolumeStorageClassRequirements(storageClass) {
+					break
+				}
 			}
 			volumeType = c.getPersistentVolumeType(pv.Spec.PersistentVolumeSource)
 		}
@@ -301,25 +338,40 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 		}
 	}
 	if len(veleroBackupAnnotationArray) > 0 {
-		// NEVER modify objects from the store. It's a read-only, local cache.
-		// You can use DeepCopy() to make a deep copy of original object and modify this copy
-		// Or create a copy manually for better performance
 		veleroBackupAnnotationValue := strings.Join(veleroBackupAnnotationArray, ",")
-		podCopy := pod.DeepCopy()
-		if podCopy.Annotations != nil {
-			podCopy.Annotations[constants.VELERO_BACKUP_ANNOTATION_KEY] = veleroBackupAnnotationValue
-		} else {
-			podCopy.Annotations = map[string]string{
-				constants.VELERO_BACKUP_ANNOTATION_KEY: veleroBackupAnnotationValue,
-			}
-		}
-		// Update pod annotations
-		_, err := c.kubeclientset.CoreV1().Pods(pod.Namespace).Update(context.TODO(), podCopy, metav1.UpdateOptions{})
+		err := c.patchPodAnnotations(pod.Namespace, pod.Name, veleroBackupAnnotationValue, "true")
 		if err != nil {
 			return err
 		}
 		klog.V(4).Infof("add velero restic backup annotation: '%s=%s' to pod '%s/%s' successfully", constants.VELERO_BACKUP_ANNOTATION_KEY, veleroBackupAnnotationValue, pod.Namespace, pod.Name)
+	} else if managedByVVC {
+		err := c.patchPodAnnotations(pod.Namespace, pod.Name, nil, nil)
+		if err != nil {
+			return err
+		}
+		klog.V(4).Infof("removed obsolete restic backup annotation %s for pod '%s/%s' successfully", constants.VELERO_BACKUP_ANNOTATION_KEY, pod.Namespace, pod.Name)
 	}
+	return nil
+}
+
+// patchPodAnnotations
+func (c *Controller) patchPodAnnotations(namespace string, name string, volumes interface{}, managed interface{}) error {
+	patch := PodPatch{
+		Metadata: PodPatchMetadata{
+			Annotations: map[string]interface{}{
+				constants.VELERO_BACKUP_ANNOTATION_KEY : volumes,
+				constants.POD_BACKUP_MANAGED_ANNOTATION_KEY : managed,
+			},
+		},
+	}
+	patchBytes, err := json.Marshal(patch)
+
+	// Patch pod annotations
+	_, err = c.kubeclientset.CoreV1().Pods(namespace).Patch(context.TODO(), name, types.StrategicMergePatchType, []byte(patchBytes), metav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
