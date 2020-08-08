@@ -5,7 +5,7 @@ name: default
 steps:
 
 - name: build
-  image: golang:1.11
+  image: golang:1.14
   environment:
     CGO_ENABLED: 0
     GO111MODULE: on
