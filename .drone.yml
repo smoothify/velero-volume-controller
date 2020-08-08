@@ -27,3 +27,10 @@ steps:
     event:
       - push
       - tag
+
+- name: publish helm
+  image: plugins/gh-pages
+  settings:
+    username: smoothify
+    password: {from_secret: github_token}
+    pages_directory: docs/
