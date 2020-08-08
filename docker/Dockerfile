@@ -6,18 +6,18 @@ RUN apk add --update make
 WORKDIR /go/src/github.com/duyanghao/velero-volume-controller
 
 # Source code, building tools and dependences
-COPY cmd /go/src/github.com/duyanghao/velero-volume-controller/cmd
-COPY pkg /go/src/github.com/duyanghao/velero-volume-controller/pkg
-COPY Makefile /go/src/github.com/duyanghao/velero-volume-controller
+COPY cmd /go/src/github.com/smoothify/velero-volume-controller/cmd
+COPY pkg /go/src/github.com/smoothify/velero-volume-controller/pkg
+COPY Makefile /go/src/github.com/smoothify/velero-volume-controller
 
-COPY go.mod /go/src/github.com/duyanghao/velero-volume-controller
-COPY go.sum /go/src/github.com/duyanghao/velero-volume-controller
+COPY go.mod /go/src/github.com/smoothify/velero-volume-controller
+COPY go.sum /go/src/github.com/smoothify/velero-volume-controller
 
 ENV CGO_ENABLED 0
 ENV GOOS linux
 ENV GO111MODULE=on
 
-ENV TIMEZONE "Asia/Shanghai"
+ENV TIMEZONE "Europe/London"
 
 RUN make build
 RUN mv build/velero-volume-controller/velero-volume-controller /go/bin

@@ -2,7 +2,7 @@
 SERVER_VERSION = v2.0
 ## Folder content generated files
 BUILD_FOLDER = ./build
-PROJECT_URL  = github.com/duyanghao/velero-volume-controller
+PROJECT_URL  = github.com/smoothify/velero-volume-controller
 ## command
 GO           = go
 GO_VENDOR    = go mod
@@ -41,7 +41,7 @@ src.build:
 
 .PHONY: dockerfiles.build
 dockerfiles.build:
-	docker build --tag duyanghao/velero-volume-controller:$(SERVER_VERSION) -f ./docker/Dockerfile .
+	docker build --tag smoothify/velero-volume-controller:$(SERVER_VERSION) -f ./docker/Dockerfile .
 
 ## git tag version ########################################
 
