@@ -1,0 +1,15 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "velero-volume-controller.fullname" . }}
+  labels:
+{{ include "velero-volume-controller.labels" . | indent 4 }}
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["create", "get", "watch", "list", "delete", "patch", "update"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "watch", "get", "update"]
+{{- end }}
