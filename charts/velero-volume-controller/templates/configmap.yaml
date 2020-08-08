@@ -16,3 +16,9 @@ data:
       excludeNamespaces: {{ .Values.veleroVolumeCfg.excludeNamespaces }}
       includeVolumeTypes: {{ .Values.veleroVolumeCfg.includeVolumeTypes }}
       excludeVolumeTypes: {{ .Values.veleroVolumeCfg.excludeVolumeTypes }}
+      includeClaimNames: {{ .Values.veleroVolumeCfg.includeClaimNames }}
+      excludeClaimNames: {{ .Values.veleroVolumeCfg.excludeClaimNames }}
+      includeVolumeNames: {{ .Values.veleroVolumeCfg.includeVolumeNames }}
+      excludeVolumeNames: {{ .Values.veleroVolumeCfg.excludeVolumeNames }}
+      includeStorageClasses: {{ .Values.veleroVolumeCfg.includeStorageClasses }}
+      excludeStorageClasses: {{ .Values.veleroVolumeCfg.excludeStorageClasses }}
