@@ -4,6 +4,17 @@ name: default
 
 steps:
 
+- name: build
+  image: golang:1.11
+  environment:
+    CGO_ENABLED: 0
+    GO111MODULE: on
+  commands:
+    - "go build -v -o release/linux/amd64/velero-volume-controller ./cmd/controller"
+  when:
+    event:
+      - push
+
 - name: build and push
   image: plugins/docker
   settings:
