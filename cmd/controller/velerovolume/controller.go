@@ -231,7 +231,7 @@ func (c *Controller) syncHandler(key string) error {
 		flag := false
 		includeNamespaces := strings.Split(c.cfg.IncludeNamespaces, ",")
 		for _, namespace := range includeNamespaces {
-			if namespace == pod.Namespace {
+			if strings.Trim(namespace, " ") == pod.Namespace {
 				flag = true
 				break
 			}
@@ -244,7 +244,7 @@ func (c *Controller) syncHandler(key string) error {
 		flag := true
 		excludeNamespaces := strings.Split(c.cfg.ExcludeNamespaces, ",")
 		for _, namespace := range excludeNamespaces {
-			if namespace == pod.Namespace {
+			if strings.Trim(namespace, " ") == pod.Namespace {
 				flag = false
 				break
 			}
@@ -278,7 +278,7 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 
 		// Check if volume is in excluded volumes annotation
 		for _, ev := range excludedVolumes {
-			if ev == volume.Name {
+			if strings.Trim(ev, " ") == volume.Name {
 				break
 			}
 		}
@@ -380,6 +380,7 @@ func (c *Controller) checkVolumeClaimNameRequirements(namespace string, claimNam
 	if c.cfg.IncludeClaimNames != "" {
 		includeNames := strings.Split(c.cfg.IncludeClaimNames, ",")
 		for _, cn := range includeNames {
+			cn = strings.Trim(cn, " ")
 			// Include name has a namespace specified
 			if strings.Contains(cn, "/") {
 				if cn == fmt.Sprintf("%s/%s", namespace, claimName) {
@@ -395,6 +396,7 @@ func (c *Controller) checkVolumeClaimNameRequirements(namespace string, claimNam
 	} else if c.cfg.ExcludeClaimNames != "" {
 		excludeNames := strings.Split(c.cfg.ExcludeClaimNames, ",")
 		for _, cn := range excludeNames {
+			cn = strings.Trim(cn, " ")
 			// Exclude name has a namespace specified
 			if strings.Contains(cn, "/") {
 				if cn == fmt.Sprintf("%s/%s", namespace, claimName) {
@@ -415,7 +417,7 @@ func (c *Controller) checkVolumeNameRequirements(volumeName string) bool {
 	if c.cfg.IncludeVolumeNames != "" {
 		includeNames := strings.Split(c.cfg.IncludeVolumeNames, ",")
 		for _, cn := range includeNames {
-			if cn == volumeName {
+			if strings.Trim(cn, " ") == volumeName {
 				return true
 			}
 		}
@@ -423,7 +425,7 @@ func (c *Controller) checkVolumeNameRequirements(volumeName string) bool {
 	} else if c.cfg.ExcludeVolumeNames != "" {
 		excludeNames := strings.Split(c.cfg.ExcludeVolumeNames, ",")
 		for _, cn := range excludeNames {
-			if cn == volumeName {
+			if strings.Trim(cn, " ") == volumeName {
 				return false
 			}
 		}
@@ -436,7 +438,7 @@ func (c *Controller) checkVolumeStorageClassRequirements(storageClass string) bo
 	if c.cfg.IncludeStorageClasses != "" {
 		includeClasses := strings.Split(c.cfg.IncludeStorageClasses, ",")
 		for _, sc := range includeClasses {
-			if sc == storageClass {
+			if strings.Trim(sc, " ") == storageClass {
 				return true
 			}
 		}
@@ -444,7 +446,7 @@ func (c *Controller) checkVolumeStorageClassRequirements(storageClass string) bo
 	} else if c.cfg.ExcludeStorageClasses != "" {
 		excludeClasses := strings.Split(c.cfg.ExcludeStorageClasses, ",")
 		for _, sc := range excludeClasses {
-			if sc == storageClass {
+			if strings.Trim(sc, " ") == storageClass {
 				return false
 			}
 		}
@@ -458,7 +460,7 @@ func (c *Controller) checkVolumeTypeRequirements(volumeType string) bool {
 	if c.cfg.IncludeVolumeTypes != "" {
 		includeVolumeTypes := strings.Split(c.cfg.IncludeVolumeTypes, ",")
 		for _, vt := range includeVolumeTypes {
-			if strings.EqualFold(vt, volumeType) {
+			if strings.EqualFold(strings.Trim(vt, " "), volumeType) {
 				return true
 			}
 		}
@@ -467,7 +469,7 @@ func (c *Controller) checkVolumeTypeRequirements(volumeType string) bool {
 		excludeVolumeTypes := strings.Split(c.cfg.ExcludeVolumeTypes, ",")
 		excludeVolumeTypes = append(excludeVolumeTypes, "hostPath", "secret", "configMap", "emptyDir")
 		for _, vt := range excludeVolumeTypes {
-			if strings.EqualFold(vt, volumeType) {
+			if strings.EqualFold(strings.Trim(vt, " "), volumeType) {
 				return false
 			}
 		}
