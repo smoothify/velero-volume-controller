@@ -4,33 +4,57 @@ name: default
 
 steps:
 
-- name: build
+- name: get-branch-version
+  image: smoothify/drone-semantic-release
+  pull: always
+  settings:
+    dry_run: true
+    git_credentials: { from_secret: git_password }
+    git_user_email: { from_secret: git_email }
+    tags_build: true
+  when:
+    event:
+      - push
+
+- name: build-branch
   image: golang:1.14
   environment:
     CGO_ENABLED: 0
     GO111MODULE: on
   commands:
-    - "go build -v -o release/linux/amd64/velero-volume-controller ./cmd/controller"
+    - "go build -ldflags \"-X main.version=${NEXT_VERSION}\" -a -tags netgo -v -o release/linux/amd64/velero-volume-controller ./cmd/controller"
   when:
     event:
       - push
 
-- name: build and push
+- name: build-branch-image
   image: plugins/docker
   settings:
-    auto_tag: true
     dockerfile: docker/Dockerfile
-    password: {from_secret: docker_password}
     repo: smoothify/velero-volume-controller
-    username: smoothify
+    username: {from_secret: docker_username}
+    password: {from_secret: docker_password}
+    cache_from:
+      - smoothify/velero-volume-controller:latest
   when:
     event:
       - push
-      - tag
 
-- name: publish helm
-  image: plugins/gh-pages
+- name: release-branch
+  image: smoothify/drone-semantic-release
+  pull: always
   settings:
-    username: smoothify
-    password: {from_secret: github_token}
-    pages_directory: docs/
+    dry_run: false
+    git_credentials: { from_secret: git_password }
+    git_user_email: { from_secret: git_email }
+    changelog: true
+  when:
+    event:
+      - push
+
+#- name: publish helm
+#  image: plugins/gh-pages
+#  settings:
+#    username: smoothify
+#    password: {from_secret: github_token}
+#    pages_directory: docs/
