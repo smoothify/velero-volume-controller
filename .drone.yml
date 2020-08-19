@@ -90,6 +90,9 @@ steps:
     git_credentials: { from_secret: git_password }
     git_user_email: { from_secret: git_email }
     changelog: true
+    assets:
+      - charts/velero-volume-controller/values.yaml
+      - charts/velero-volume-controller/Chart.yaml
   when:
     event:
       - push
