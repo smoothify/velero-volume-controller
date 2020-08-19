@@ -98,20 +98,12 @@ steps:
       - push
 
 - name: helm release
-  image: appleboy/drone-git-push
-  pull: if-not-exists
-  environment:
-    DRONE_NETRC_USERNAME: { from_secret: git_username }
-    DRONE_NETRC_PASSWORD: { from_secret: git_password }
+  image: plugins/gh-pages
   settings:
-    remote_name: origin
-    branch: gh-pages
-    local_ref: gh-pages
-    path: ./.tmp
-    commit: true
-    commit_message: update helm chart [SKIP CI]
-    author_name: { from_secret: git_user }
-    author_email: { from_secret: git_email }
+    username: smoothify
+    password: {from_secret: git_password}
+    pages_directory: docs/
+    path: .tmp/
   when:
     event:
       - push
