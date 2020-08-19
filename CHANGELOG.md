@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/smoothify/velero-volume-controller/compare/v0.2.1...v0.2.2) (2020-08-19)
+
+
+### Bug Fixes
+
+* switch to using drone-git-push plugin ([ed1f555](https://github.com/smoothify/velero-volume-controller/commit/ed1f55573b54f2165ebc1bf512c1fa5374e0f4c0))
+
 ## [0.2.1](https://github.com/smoothify/velero-volume-controller/compare/v0.2.0...v0.2.1) (2020-08-19)
 
 
