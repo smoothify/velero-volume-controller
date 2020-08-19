@@ -1,3 +1,11 @@
+## [0.2.4](https://github.com/smoothify/velero-volume-controller/compare/v0.2.3...v0.2.4) (2020-08-19)
+
+
+### Bug Fixes
+
+* add chart files to assets for committing ([af3cd66](https://github.com/smoothify/velero-volume-controller/commit/af3cd66dc037069e1e74be530e0ed7702f35522f))
+* remove ssh_key reference ([5435175](https://github.com/smoothify/velero-volume-controller/commit/54351755e3a2eb35e98aa98ef0a41f3581806ed1))
+
 ## [0.2.3](https://github.com/smoothify/velero-volume-controller/compare/v0.2.2...v0.2.3) (2020-08-19)
 
 
