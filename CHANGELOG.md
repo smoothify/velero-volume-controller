@@ -1,3 +1,10 @@
+## [0.2.6](https://github.com/smoothify/velero-volume-controller/compare/v0.2.5...v0.2.6) (2020-08-19)
+
+
+### Bug Fixes
+
+* try using gh-pages plugin ([81de538](https://github.com/smoothify/velero-volume-controller/commit/81de5388878bb870e9bd48ff78f178f05bea2aaa))
+
 ## [0.2.5](https://github.com/smoothify/velero-volume-controller/compare/v0.2.4...v0.2.5) (2020-08-19)
 
 
