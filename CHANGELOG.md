@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/smoothify/velero-volume-controller/compare/v0.2.2...v0.2.3) (2020-08-19)
+
+
+### Bug Fixes
+
+* use correct git clone path and add when filters ([1dd2e28](https://github.com/smoothify/velero-volume-controller/commit/1dd2e28ebd10cc44e99511fe259c83df84934663))
+
 ## [0.2.2](https://github.com/smoothify/velero-volume-controller/compare/v0.2.1...v0.2.2) (2020-08-19)
 
 
