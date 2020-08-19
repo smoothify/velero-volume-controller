@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/smoothify/velero-volume-controller/compare/v0.2.0...v0.2.1) (2020-08-19)
+
+
+### Bug Fixes
+
+* add helm chart publishing steps ([738a85b](https://github.com/smoothify/velero-volume-controller/commit/738a85bba7fa944a50ac0eab55ba6e133a20b801))
+
 # [0.2.0](https://github.com/smoothify/velero-volume-controller/compare/v0.1.0...v0.2.0) (2020-08-13)
 
 
