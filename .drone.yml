@@ -89,12 +89,19 @@ steps:
       - push
 
 - name: helm release
-  image: plugins/gh-pages
+  image: appleboy/drone-git-push
+  pull: if-not-exists
   settings:
-    username: smoothify
-    password: {from_secret: git_password}
-    pages_directory: docs/
-    temporary_base: .tmp/
+    remote_name: origin
+    branch: gh-pages
+    local_ref: gh-pages
+    path: ./tmp
+    commit: true
+    commit_message: update helm chart [SKIP CI]
+    author_name: { from_secret: git_user }
+    author_email: { from_secret: git_email }
+    ssh_key:
+      from_secret: ssh_deploy_key
   when:
     event:
       - push
