@@ -102,7 +102,7 @@ steps:
   settings:
     username: smoothify
     password: {from_secret: git_password}
-    pages_directory: .helm/docs/
+    pages_directory: .helm
   when:
     event:
       - push
