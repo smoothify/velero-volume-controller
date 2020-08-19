@@ -27,6 +27,41 @@ steps:
     event:
       - push
 
+###### Helm ######
+- name: helm lint
+  image: quay.io/helmpack/chart-testing:v3.0.0
+  commands:
+    - apk add --update make
+    - make lint
+
+- name: helm gh pages clone
+  image: docker:git
+  commands:
+    - git clone --single-branch --branch gh-pages $DRONE_GIT_HTTP_URL .tmp
+  when:
+    event:
+      - push
+
+- name: helm bump version
+  image: smoothify/drone-helm-version-bump
+  pull: always
+  settings:
+    dry_run: false
+    working_dir: ./charts/velero-volume-controller
+    chart_version_file: .release-version
+    app_version_file: .release-version
+    image: smoothify/velero-volume-controller
+    image_version_file: .release-version
+  when:
+    event:
+      - push
+
+- name: helm generate
+  image: alpine/helm:3.0.3
+  commands:
+    - apk add --update make
+    - make publish
+
 - name: build-branch-image
   image: plugins/docker
   settings:
@@ -40,6 +75,7 @@ steps:
     event:
       - push
 
+###### Release ######
 - name: release-branch
   image: smoothify/drone-semantic-release
   pull: always
@@ -52,9 +88,15 @@ steps:
     event:
       - push
 
-#- name: publish helm
-#  image: plugins/gh-pages
-#  settings:
-#    username: smoothify
-#    password: {from_secret: github_token}
-#    pages_directory: docs/
+- name: helm release
+  image: plugins/gh-pages
+  settings:
+    username: smoothify
+    password: {from_secret: git_password}
+    pages_directory: docs/
+    temporary_base: .tmp/
+  when:
+    event:
+      - push
+    branch:
+      - master
