@@ -33,6 +33,9 @@ steps:
   commands:
     - apk add --update make
     - make lint
+  when:
+    event:
+      - push
 
 - name: helm gh pages clone
   image: docker:git
@@ -61,6 +64,9 @@ steps:
   commands:
     - apk add --update make
     - make publish
+  when:
+    event:
+      - push
 
 - name: build-branch-image
   image: plugins/docker
@@ -95,7 +101,7 @@ steps:
     remote_name: origin
     branch: gh-pages
     local_ref: gh-pages
-    path: ./tmp
+    path: ./.tmp
     commit: true
     commit_message: update helm chart [SKIP CI]
     author_name: { from_secret: git_user }
