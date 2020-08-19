@@ -1,3 +1,10 @@
+## [0.2.5](https://github.com/smoothify/velero-volume-controller/compare/v0.2.4...v0.2.5) (2020-08-19)
+
+
+### Bug Fixes
+
+* explicitly add git username / passwords ([4f19171](https://github.com/smoothify/velero-volume-controller/commit/4f1917185e3cdc48ea3554357d42d3e67b9b3009))
+
 ## [0.2.4](https://github.com/smoothify/velero-volume-controller/compare/v0.2.3...v0.2.4) (2020-08-19)
 
 
