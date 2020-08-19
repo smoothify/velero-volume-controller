@@ -1,3 +1,10 @@
+## [0.2.9](https://github.com/smoothify/velero-volume-controller/compare/v0.2.8...v0.2.9) (2020-08-19)
+
+
+### Bug Fixes
+
+* clone helm chart history into .helm ([dde042e](https://github.com/smoothify/velero-volume-controller/commit/dde042eedf6a7a2deac35d4c9a19141a2c9bc799))
+
 ## [0.2.8](https://github.com/smoothify/velero-volume-controller/compare/v0.2.7...v0.2.8) (2020-08-19)
 
 
