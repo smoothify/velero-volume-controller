@@ -103,7 +103,7 @@ steps:
     username: smoothify
     password: {from_secret: git_password}
     pages_directory: docs/
-    path: .tmp/
+    workspace: .tmp/
   when:
     event:
       - push
