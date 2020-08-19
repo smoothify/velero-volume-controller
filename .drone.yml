@@ -106,8 +106,6 @@ steps:
     commit_message: update helm chart [SKIP CI]
     author_name: { from_secret: git_user }
     author_email: { from_secret: git_email }
-    ssh_key:
-      from_secret: ssh_deploy_key
   when:
     event:
       - push
