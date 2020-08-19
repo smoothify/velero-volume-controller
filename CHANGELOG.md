@@ -1,3 +1,10 @@
+## [0.2.8](https://github.com/smoothify/velero-volume-controller/compare/v0.2.7...v0.2.8) (2020-08-19)
+
+
+### Bug Fixes
+
+* try to get paths correct ([b29cf9b](https://github.com/smoothify/velero-volume-controller/commit/b29cf9b062990e1729ac5bccde9cced2e912a1b1))
+
 ## [0.2.7](https://github.com/smoothify/velero-volume-controller/compare/v0.2.6...v0.2.7) (2020-08-19)
 
 
