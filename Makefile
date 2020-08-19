@@ -15,7 +15,7 @@ SECRET_KEY   = $(shell cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head
 UNAME := $(shell uname)
 
 ## Helm charts
-HELM_PUBLISH_FOLDER = ./.tmp
+HELM_PUBLISH_FOLDER = .helm
 
 ################################################
 

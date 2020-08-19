@@ -40,7 +40,7 @@ steps:
 - name: helm gh pages clone
   image: docker:git
   commands:
-    - git clone --single-branch --branch gh-pages $DRONE_GIT_HTTP_URL .tmp
+    - git clone --single-branch --branch gh-pages $DRONE_GIT_HTTP_URL .helm
   when:
     event:
       - push
@@ -102,8 +102,7 @@ steps:
   settings:
     username: smoothify
     password: {from_secret: git_password}
-    pages_directory: .tmp/docs/
-    temporary_base: .gh-pages/
+    pages_directory: .helm/docs/
   when:
     event:
       - push
