@@ -1,3 +1,10 @@
+## [0.2.7](https://github.com/smoothify/velero-volume-controller/compare/v0.2.6...v0.2.7) (2020-08-19)
+
+
+### Bug Fixes
+
+* use correct setting variable ([51bb4a1](https://github.com/smoothify/velero-volume-controller/commit/51bb4a13e81f4370c4fd551b44b2b63e7f35db79))
+
 ## [0.2.6](https://github.com/smoothify/velero-volume-controller/compare/v0.2.5...v0.2.6) (2020-08-19)
 
 
