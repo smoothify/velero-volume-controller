@@ -4,29 +4,29 @@ image:
   repository: smoothify/velero-volume-controller
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart version.
-  tag: latest
+  tag: 0.2.0
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: ''
+fullnameOverride: ''
 
 # Core parameters for velero-volume-controller behavior
 clusterServerCfg:
-  masterURL: ""
-  kubeConfig: ""
+  masterURL: ''
+  kubeConfig: ''
   leaseLockNamespace: velero
   leaseLockName: velero-volume-controller
 veleroVolumeCfg:
-  includeNamespaces: ""
-  excludeNamespaces: ""
-  includeVolumeTypes: ""
-  excludeVolumeTypes: ""
-  includeClaimNames: ""
-  excludeClaimNames: ""
-  includeVolumeNames: ""
-  excludeVolumeNames: ""
-  includeStorageClasses: ""
-  excludeStorageClasses: ""
+  includeNamespaces: ''
+  excludeNamespaces: ''
+  includeVolumeTypes: ''
+  excludeVolumeTypes: ''
+  includeClaimNames: ''
+  excludeClaimNames: ''
+  includeVolumeNames: ''
+  excludeVolumeNames: ''
+  includeStorageClasses: ''
+  excludeStorageClasses: ''
 
 # If true, will create the proper RBAC to watch the cluster pods
 # and associate the related service account to the controller pod.
@@ -35,7 +35,7 @@ rbac:
 
 # If rbac.create is set to false, use serviceAccountName to associate an existing
 # service account: this service account should have proper permissions to watch pods.
-serviceAccountName: "default"
+serviceAccountName: default
 
 podAnnotations: {}
 
