@@ -15,5 +15,9 @@ data:
       includeVolumeTypes: persistentVolumeClaim
       excludeVolumeTypes:
       excludeJobs: *
+      includeClaimNames:
+      excludeClaimNames:
+      includeVolumeNames:
+      excludeVolumeNames:
       includeStorageClasses:
       excludeStorageClasses: azurefiles,azurefiles-premium

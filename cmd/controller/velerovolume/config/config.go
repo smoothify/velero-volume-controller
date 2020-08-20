@@ -13,6 +13,10 @@ type VeleroVolumeCfg struct {
 	IncludeVolumeTypes string `yaml:"includeVolumeTypes,omitempty"`
 	ExcludeVolumeTypes string `yaml:"excludeVolumeTypes,omitempty"`
 	ExcludeJobs        string `yaml:"excludeJobs,omitempty"`
+	IncludeClaimNames string `yaml:"includeClaimNames,omitempty"`
+	ExcludeClaimNames string `yaml:"excludeClaimNames,omitempty"`
+	IncludeVolumeNames string `yaml:"includeVolumeNames,omitempty"`
+	ExcludeVolumeNames string `yaml:"excludeVolumeNames,omitempty"`
 	IncludeStorageClasses string `yaml:"includeStorageClasses,omitempty"`
 	ExcludeStorageClasses string `yaml:"excludeStorageClasses,omitempty"`
 }
@@ -35,9 +39,11 @@ type Config struct {
 
 // validate the configuration
 func (c *Config) validate() error {
-	if c.VeleroVolumeCfg.IncludeNamespaces != "" && c.VeleroVolumeCfg.ExcludeNamespaces != "" ||
-		c.VeleroVolumeCfg.IncludeVolumeTypes != "" && c.VeleroVolumeCfg.ExcludeVolumeTypes != "" ||
-		c.VeleroVolumeCfg.IncludeStorageClasses != "" && c.VeleroVolumeCfg.ExcludeStorageClasses != "" {
+	if (c.VeleroVolumeCfg.IncludeNamespaces != "" && c.VeleroVolumeCfg.ExcludeNamespaces != "") ||
+		(c.VeleroVolumeCfg.IncludeVolumeTypes != "" && c.VeleroVolumeCfg.ExcludeVolumeTypes != "") ||
+		(c.VeleroVolumeCfg.IncludeClaimNames != "" && c.VeleroVolumeCfg.ExcludeClaimNames != "") ||
+		(c.VeleroVolumeCfg.IncludeVolumeNames != "" && c.VeleroVolumeCfg.ExcludeVolumeNames != "") ||
+		(c.VeleroVolumeCfg.IncludeStorageClasses != "" && c.VeleroVolumeCfg.ExcludeStorageClasses != "") {
 		return fmt.Errorf("Invalid velero volume resources configurations, please check ...")
 	}
 	// TODO: other configuration validate ...

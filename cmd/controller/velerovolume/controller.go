@@ -306,6 +306,11 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 
 		// Check if volume uses persistentVolumeClaim and if so, retrieve underlying volume
 		if volume.PersistentVolumeClaim != nil {
+			// Check if claim name meets requirements
+			if !c.checkVolumeClaimNameRequirements(pod.Namespace, volume.PersistentVolumeClaim.ClaimName) {
+				break
+			}
+
 			klog.V(4).Infof("pod '%s/%s' uses volume '%s' from pvc '%s'", pod.Namespace, pod.Name, volume.Name, volume.PersistentVolumeClaim.ClaimName)
 
 			claim, err := c.kubeclientset.CoreV1().PersistentVolumeClaims(pod.Namespace).Get(context.TODO(), volume.PersistentVolumeClaim.ClaimName, metav1.GetOptions{})
@@ -319,6 +324,12 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 			}
 
 			klog.V(4).Infof("volume %s retrieved for claim %s", pv.Name, claim.Name)
+
+			// Check if persistent volume name meets requirements
+			if !c.checkVolumeNameRequirements(pv.Name) {
+				break
+			}
+
 			storageClass := *claim.Spec.StorageClassName
 			if storageClass == "" {
 				storageClass = pv.Spec.StorageClassName
@@ -410,6 +421,62 @@ func (c *Controller) checkVolumeTypeRequirements(volumeType string, isClaim bool
 			if strings.EqualFold(vt, volumeType) {
 				return false
 			} else if isClaim && vt == constants.VOLUME_TYPE_PERSISTENTVOLUMECLAIM {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// checkVolumeClaimNameRequirements is a function that indicates if a claim meets backup claim name requirements
+func (c *Controller) checkVolumeClaimNameRequirements(namespace string, claimName string) bool {
+	if c.cfg.IncludeClaimNames != "" {
+		includeNames := strings.Split(strings.ReplaceAll(c.cfg.IncludeClaimNames, " ", ""), ",")
+		for _, cn := range includeNames {
+			// Include name has a namespace specified
+			if strings.Contains(cn, "/") {
+				if cn == fmt.Sprintf("%s/%s", namespace, claimName) {
+					return true
+				}
+			} else {
+				if cn == claimName {
+					return true
+				}
+			}
+		}
+		return false
+	} else if c.cfg.ExcludeClaimNames != "" {
+		excludeNames := strings.Split(strings.ReplaceAll(c.cfg.ExcludeClaimNames, " ", ""), ",")
+		for _, cn := range excludeNames {
+			// Exclude name has a namespace specified
+			if strings.Contains(cn, "/") {
+				if cn == fmt.Sprintf("%s/%s", namespace, claimName) {
+					return true
+				}
+			} else {
+				if cn == claimName {
+					return true
+				}
+			}
+		}
+	}
+	return true
+}
+
+// checkVolumeNameRequirements is a function that indicates if a volume meets backup volume name requirements
+func (c *Controller) checkVolumeNameRequirements(volumeName string) bool {
+	if c.cfg.IncludeVolumeNames != "" {
+		includeNames := strings.Split(strings.ReplaceAll(c.cfg.IncludeVolumeNames," ", ""), ",")
+		for _, cn := range includeNames {
+			if cn == volumeName {
+				return true
+			}
+		}
+		return false
+	} else if c.cfg.ExcludeVolumeNames != "" {
+		excludeNames := strings.Split(strings.ReplaceAll(c.cfg.ExcludeVolumeNames, " ", ""),",")
+		for _, cn := range excludeNames {
+			if cn == volumeName {
 				return false
 			}
 		}
