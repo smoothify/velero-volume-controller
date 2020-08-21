@@ -325,6 +325,20 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 
 			klog.V(4).Infof("volume %s retrieved for claim %s", pv.Name, claim.Name)
 
+			// Check if the volume or claim is excluded via an annotation
+			if helpers.Truthy(claim.Annotations[constants.VOLUME_BACKUP_EXCLUDE_ANNOTATION_KEY]) ||
+				helpers.Truthy(pv.Annotations[constants.VOLUME_BACKUP_EXCLUDE_ANNOTATION_KEY]) {
+				klog.V(4).Infof("volume %s of type %s has explicit exclude annotation", volume.Name, volumeType)
+				break
+			}
+
+			// Check if the volume or claim is included via an annotation
+			if !helpers.Truthy(claim.Annotations[constants.VOLUME_BACKUP_INCLUDE_ANNOTATION_KEY]) &&
+				!helpers.Truthy(pv.Annotations[constants.VOLUME_BACKUP_INCLUDE_ANNOTATION_KEY]) {
+				klog.V(4).Infof("volume %s of type %s has explicit include annotation", volume.Name, volumeType)
+				veleroBackupAnnotationArray = append(veleroBackupAnnotationArray, volume.Name)
+			}
+
 			// Check if persistent volume name meets requirements
 			if !c.checkVolumeNameRequirements(pv.Name) {
 				break
