@@ -1,3 +1,11 @@
+## [0.2.4](https://github.com/smoothify/velero-volume-controller/compare/v0.2.3...v0.2.4) (2020-08-23)
+
+
+### Bug Fixes
+
+* add claim name and volume name filters ([a9a3d20](https://github.com/smoothify/velero-volume-controller/commit/a9a3d20ccdd53a2050567f32123e27b739dc1378))
+* add volume located include/exclude annotations ([237b4a9](https://github.com/smoothify/velero-volume-controller/commit/237b4a976388675ef1b2bfd656ebfdbebd7f94f7))
+
 ## [0.2.3](https://github.com/smoothify/velero-volume-controller/compare/v0.2.2...v0.2.3) (2020-08-23)
 
 
