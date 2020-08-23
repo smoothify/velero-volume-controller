@@ -14,10 +14,10 @@ entries:
     version: 0.2.2
   - apiVersion: v2
     appVersion: 0.2.1
-    created: "2020-08-20T12:16:21.884860591Z"
+    created: "2020-08-23T11:41:08.756523268Z"
     description: Kubernetes controller for velero that detects and adds relevant backup
       annotation to pods with volumes
-    digest: 324b88e18eb91d8a31a49c6e7121724b5b9d1df35ecf2dc6341effb7027b918f
+    digest: 66cf12fefef3f5aba7cdae2ecbb34e172c781c155b3f47ba0421c4d3cc4fcbcd
     name: velero-volume-controller
     type: application
     urls:
@@ -34,4 +34,4 @@ entries:
     urls:
     - https://smoothify.github.io/velero-volume-controller/velero-volume-controller-0.2.0.tgz
     version: 0.2.0
-generated: "2020-08-21T10:34:08.820022214Z"
+generated: "2020-08-23T11:41:08.755694363Z"
