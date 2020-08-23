@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/smoothify/velero-volume-controller/compare/v0.2.1...v0.2.2) (2020-08-23)
+
+
+### Bug Fixes
+
+* expand volume type filters and add storageclass filters ([16b4115](https://github.com/smoothify/velero-volume-controller/commit/16b4115e3b6e492e1f2fdeb3857058d48958ae60))
+
 ## [0.2.1](https://github.com/smoothify/velero-volume-controller/compare/v0.2.0...v0.2.1) (2020-08-23)
 
 
