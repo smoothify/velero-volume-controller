@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/smoothify/velero-volume-controller/compare/v0.2.2...v0.2.3) (2020-08-23)
+
+
+### Bug Fixes
+
+* set correct permissions in helm chart ([0df6c69](https://github.com/smoothify/velero-volume-controller/commit/0df6c69d1bb33b5800a17ae03e5af4275369bd9d))
+
 ## [0.2.2](https://github.com/smoothify/velero-volume-controller/compare/v0.2.1...v0.2.2) (2020-08-23)
 
 
