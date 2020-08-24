@@ -4,7 +4,7 @@ image:
   repository: smoothify/velero-volume-controller
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart version.
-  tag: 0.2.4
+  tag: 0.2.5
 
 imagePullSecrets: []
 nameOverride: ''

@@ -1,3 +1,10 @@
+## [0.2.5](https://github.com/smoothify/velero-volume-controller/compare/v0.2.4...v0.2.5) (2020-08-24)
+
+
+### Bug Fixes
+
+* add checksum annotation for configmap ([f81c476](https://github.com/smoothify/velero-volume-controller/commit/f81c476e0b9588b00a90b8ad809560cef404301d))
+
 ## [0.2.4](https://github.com/smoothify/velero-volume-controller/compare/v0.2.3...v0.2.4) (2020-08-23)
 
 
