@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package velerovolume
+package controller
 
 import (
 	"context"
@@ -35,7 +35,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
-	"github.com/smoothify/velero-volume-controller/cmd/controller/velerovolume/config"
+	"github.com/smoothify/velero-volume-controller/controller/config"
 	"github.com/smoothify/velero-volume-controller/pkg/constants"
 	"github.com/smoothify/velero-volume-controller/pkg/helpers"
 )
@@ -393,10 +393,10 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 // removeBackupAnnotationsFromPod trys to remove relevant backup annotation from pod.
 // This function aims to avoid the following situations:
 // 1. restic backup PartiallyFailed when pod status changed.
-// Refs to https://github.com/duyanghao/velero-volume-controller/issues/6
+// Refs to https://github.com/smoothify/velero-volume-controller/issues/6
 // 2. restic backup PartiallyFailed when pod volume disappeared.
 // 3. restic continues to backup pods that can't meet filter options anymore.
-// Refs to https://github.com/duyanghao/velero-volume-controller/pull/11
+// Refs to https://github.com/smoothify/velero-volume-controller/pull/11
 func (c *Controller) removeBackupAnnotationsFromPod(pod *corev1.Pod) error {
 	if pod.Annotations != nil {
 		if _, exist := pod.Annotations[constants.VELERO_BACKUP_ANNOTATION_KEY]; exist {

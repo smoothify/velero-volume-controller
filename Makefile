@@ -38,7 +38,7 @@ clean:
 
 .PHONY: src.build
 src.build:
-	cd cmd/controller && GO111MODULE=on $(GO) build -mod=vendor -v -o ../../$(BUILD_FOLDER)/velero-volume-controller/velero-volume-controller
+	GO111MODULE=on $(GO) build -v -o $(BUILD_FOLDER)/velero-volume-controller
 
 ## dockerfiles/ ########################################
 

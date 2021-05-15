@@ -22,7 +22,7 @@ steps:
     CGO_ENABLED: 0
     GO111MODULE: on
   commands:
-    - "go build -ldflags \"-X main.version=${NEXT_VERSION}\" -a -tags netgo -v -o release/linux/amd64/velero-volume-controller ./cmd/controller"
+    - "go build -ldflags \"-X main.version=${NEXT_VERSION}\" -a -tags netgo -v -o release/linux/amd64/velero-volume-controller"
   when:
     event:
       - push
