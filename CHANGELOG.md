@@ -1,3 +1,10 @@
+## [0.2.6](https://github.com/smoothify/velero-volume-controller/compare/v0.2.5...v0.2.6) (2021-05-15)
+
+
+### Bug Fixes
+
+* update module versions ([52a5ad7](https://github.com/smoothify/velero-volume-controller/commit/52a5ad734da9c6031e0002b7881021968652265e))
+
 ## [0.2.5](https://github.com/smoothify/velero-volume-controller/compare/v0.2.4...v0.2.5) (2020-08-24)
 
 
