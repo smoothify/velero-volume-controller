@@ -6,7 +6,6 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/ryanuber/go-glob v1.0.0
-	golang.org/dl v0.0.0-20200811212135-d149fc5456ff // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.18.0
