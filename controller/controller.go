@@ -430,7 +430,7 @@ func (c *Controller) checkVolumeTypeRequirements(volumeType string, isClaim bool
 		return false
 	} else {
 		excludeVolumeTypes := strings.Split(strings.ReplaceAll(c.cfg.ExcludeVolumeTypes, " ", ""), ",")
-		excludeVolumeTypes = append(excludeVolumeTypes, "hostPath", "secret", "configMap", "emptyDir")
+		excludeVolumeTypes = append(excludeVolumeTypes, "hostPath", "secret", "configMap")
 		for _, vt := range excludeVolumeTypes {
 			if strings.EqualFold(vt, volumeType) {
 				return false
