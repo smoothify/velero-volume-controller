@@ -5,7 +5,7 @@ BUILD_FOLDER = ./build
 PROJECT_URL  = github.com/smoothify/velero-volume-controller
 ## command
 GO           = go
-GO_VENDOR    = go mod
+GO_MOD       = go mod
 MKDIR_P      = mkdir -p
 
 ## Random Alphanumeric String
@@ -24,7 +24,7 @@ all: build
 
 .PHONY: pre-build
 pre-build:
-	$(GO_VENDOR) vendor
+	$(GO_MOD) download
 
 .PHONY: build
 build: pre-build
