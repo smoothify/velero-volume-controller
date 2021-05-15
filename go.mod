@@ -1,4 +1,4 @@
-module github.com/duyanghao/velero-volume-controller
+module github.com/smoothify/velero-volume-controller
 
 go 1.13
 

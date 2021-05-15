@@ -35,9 +35,9 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
-	"github.com/duyanghao/velero-volume-controller/cmd/controller/velerovolume/config"
-	"github.com/duyanghao/velero-volume-controller/pkg/constants"
-	"github.com/duyanghao/velero-volume-controller/pkg/helpers"
+	"github.com/smoothify/velero-volume-controller/cmd/controller/velerovolume/config"
+	"github.com/smoothify/velero-volume-controller/pkg/constants"
+	"github.com/smoothify/velero-volume-controller/pkg/helpers"
 )
 
 // Controller is the controller implementation for Pod resources
