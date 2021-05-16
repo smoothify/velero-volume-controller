@@ -356,6 +356,11 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 
 		// Check if volume meets volume type requirements
 		if c.checkVolumeTypeRequirements(volumeType, volume.PersistentVolumeClaim != nil) {
+			// Check if persistent volume name meets requirements
+			if !c.checkVolumeNameRequirements(pod.Namespace, volume.Name) {
+				break
+			}
+
 			klog.V(4).Infof("volume %s of type %s matches requirements", volume.Name, volumeType)
 			veleroBackupAnnotationArray = append(veleroBackupAnnotationArray, volume.Name)
 		}
