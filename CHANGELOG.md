@@ -1,3 +1,10 @@
+## [0.2.8](https://github.com/smoothify/velero-volume-controller/compare/v0.2.7...v0.2.8) (2021-05-16)
+
+
+### Bug Fixes
+
+* allow namespaces to be specified in volume name inclusions/exclusions ([1ddbeef](https://github.com/smoothify/velero-volume-controller/commit/1ddbeefcc67c809515b4054c617d839ccc135a1f))
+
 ## [0.2.7](https://github.com/smoothify/velero-volume-controller/compare/v0.2.6...v0.2.7) (2021-05-16)
 
 
