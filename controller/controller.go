@@ -340,7 +340,7 @@ func (c *Controller) addBackupAnnotationsToPod(pod *corev1.Pod) error {
 			}
 
 			// Check if persistent volume name meets requirements
-			if !c.checkVolumeNameRequirements(pv.Name) {
+			if !c.checkVolumeNameRequirements(pod.Namespace, pv.Name) {
 				break
 			}
 
@@ -465,11 +465,11 @@ func (c *Controller) checkVolumeClaimNameRequirements(namespace string, claimNam
 			// Exclude name has a namespace specified
 			if strings.Contains(cn, "/") {
 				if cn == fmt.Sprintf("%s/%s", namespace, claimName) {
-					return true
+					return false
 				}
 			} else {
 				if cn == claimName {
-					return true
+					return false
 				}
 			}
 		}
@@ -478,20 +478,32 @@ func (c *Controller) checkVolumeClaimNameRequirements(namespace string, claimNam
 }
 
 // checkVolumeNameRequirements is a function that indicates if a volume meets backup volume name requirements
-func (c *Controller) checkVolumeNameRequirements(volumeName string) bool {
+func (c *Controller) checkVolumeNameRequirements(namespace string, volumeName string) bool {
 	if c.cfg.IncludeVolumeNames != "" {
 		includeNames := strings.Split(strings.ReplaceAll(c.cfg.IncludeVolumeNames," ", ""), ",")
-		for _, cn := range includeNames {
-			if cn == volumeName {
-				return true
+		for _, vn := range includeNames {
+			if strings.Contains(vn, "/") {
+				if vn == fmt.Sprintf("%s/%s", namespace, volumeName) {
+					return true
+				}
+			} else {
+				if vn == volumeName {
+					return true
+				}
 			}
 		}
 		return false
 	} else if c.cfg.ExcludeVolumeNames != "" {
 		excludeNames := strings.Split(strings.ReplaceAll(c.cfg.ExcludeVolumeNames, " ", ""),",")
-		for _, cn := range excludeNames {
-			if cn == volumeName {
-				return false
+		for _, vn := range excludeNames {
+			if strings.Contains(vn, "/") {
+				if vn == fmt.Sprintf("%s/%s", namespace, volumeName) {
+					return false
+				}
+			} else {
+				if vn == volumeName {
+					return false
+				}
 			}
 		}
 	}
