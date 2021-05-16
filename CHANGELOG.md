@@ -1,3 +1,10 @@
+## [0.2.7](https://github.com/smoothify/velero-volume-controller/compare/v0.2.6...v0.2.7) (2021-05-16)
+
+
+### Bug Fixes
+
+* remove emptyDir from excludeVolumeTypes defaults ([baf22b1](https://github.com/smoothify/velero-volume-controller/commit/baf22b1815a484e4a9fae5083d56ce0b1461a065))
+
 ## [0.2.6](https://github.com/smoothify/velero-volume-controller/compare/v0.2.5...v0.2.6) (2021-05-15)
 
 
